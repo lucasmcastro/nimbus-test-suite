@@ -1,9 +1,11 @@
 # encoding: utf-8
 require "rubygems"
+require "bundler/setup"
+
 require "rspec"
 require "watir-webdriver"
 require "yaml"
-require "ruby-debug"
+# require "ruby-debug"
 require "net/http"
 
 unless Process.uid == 0
