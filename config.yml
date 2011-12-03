@@ -1,4 +1,5 @@
-nimbus_ip: 172.16.241.133
+initial_ip: 192.168.17.129
+nimbus_ip: 192.168.17.133
 
 nimbus_login:
   text_field:
@@ -7,8 +8,25 @@ nimbus_login:
 
 wizard_network:
   text_field:
-    address: 172.16.241.133
+    address: 192.168.17.133
     netmask: 255.255.255.0
-    gateway: 172.16.241.1
-    dns1: 172.16.241.1
+    gateway: 192.168.17.1
+    dns1: 192.168.17.1
     dns2: 8.8.8.8
+
+wizard_timezone:
+  text_field:
+    ntp_server: a.ntp.br
+  select_list:
+    country: Brazil
+    area: America/Recife
+
+wizard_password:
+  text_field:
+    new_password1: admin
+    new_password2: admin
+
+edit_client1:
+  text_field:
+    name: Client 1
+    description: This machine was added by watir automated test.

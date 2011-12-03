@@ -4,46 +4,71 @@ require "yaml"
 
 class NimbusBrowser < Watir::Browser
   attr_accessor :config
-  
+
   def initialize(browser = :chrome, *args)
     parse_config
     super(browser, *args)
   end
-  
-  def goto(partial_uri = "")
-    super(self.base_url+partial_uri)
+
+  def goto(uri, base_url=self.base_url)
+    if uri =~ URI.regexp
+      super(uri)
+    else
+      super(base_url+uri)
+    end
   end
-  
+
+  # Network Wizard causes IP to change
+  # Use this after the wizard
+  def goto_base
+    self.goto ""
+  end
+
+  # Use this before the wizard
+  # Since Network Wizard didn't change IP yet
+  def goto_start
+    self.goto("", self.virgin_url)
+  end
+
   def base_url
-    "http://#{self.nimbus_ip}/"
+    "http://#{self.config['nimbus_ip']}/"
   end
-    
+  
+  def start_url
+    "http://#{self.config['initial_ip']}/"
+  end
+  
   def parse_config
       self.config = open('config.yml') {|f| YAML.load(f)}
-      for k,v in self.config:
-        create_attr k
-        self.send "#{k}=", v
-      end
   end
-  
+
   def nimbus_login
     self.goto "session/login"
     self.auto_fill :nimbus_login
-    self.button(:value => 'Acessar').click
+    self.button(:text => 'Acessar').click
   end
-  
+
   def auto_fill(data_set_name)
-    data_set = self.send data_set_name
-    for type,data in fields: 
+    data_dict = self.config[data_set_name.to_s]
+    for type,data in data_dict: 
       self.fill(type, data)
     end
   end
-  
+
   def fill(type, data)
-    type = find_setter(type)
+    setter = find_setter(type)
     for name,value in data:
-      self.send "#{type}(:name => '#{name}').#{setter}", value
+      field = self.get_field type, name
+      begin
+        field.send "#{setter}", value
+      rescue Watir::Exception::UnknownObjectException
+        raise  UnknownField, "Could not find #{type} with name '#{name}'"
+      end
     end
+  end
+
+  def get_field(type, name)
+      self.send "#{type}", :name => "#{name}"
   end
 
   def find_setter(type)
@@ -54,18 +79,8 @@ class NimbusBrowser < Watir::Browser
         'select'
     end
   end  
-  
-  def create_method( name, &block )
-       self.class.send( :define_method, name, &block )
-   end
-
-   def create_attr( name )
-       create_method( "#{name}=".to_sym ) { |val| 
-           instance_variable_set( "@" + name, val)
-       }
-
-       create_method( name.to_sym ) { 
-           instance_variable_get( "@" + name ) 
-       }
-   end  
 end
+
+class UnknownField < Exception
+end
+
