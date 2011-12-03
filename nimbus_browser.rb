@@ -10,7 +10,7 @@ class NimbusBrowser < Watir::Browser
     super(browser, *args)
   end
   
-  def goto(partial_uri)
+  def goto(partial_uri = "")
     super(self.base_url+partial_uri)
   end
   
@@ -32,19 +32,20 @@ class NimbusBrowser < Watir::Browser
     self.button(:value => 'Acessar').click
   end
   
-  def auto_fill(attr)
-    fields = self.send attr
-    for name,v in fields:
-      value, type = v.gsub(/\s+/, "").split(',')
-      self.fill(type, name, value)
+  def auto_fill(data_set_name)
+    data_set = self.send data_set_name
+    for type,data in fields: 
+      self.fill(type, data)
     end
   end
   
-  def fill(value, type)
-    setter = self.find_setter type
-    self.send "#{type}(:name => '#{name}').#{setter}", value
+  def fill(type, data)
+    type = find_setter(type)
+    for name,value in data:
+      self.send "#{type}(:name => '#{name}').#{setter}", value
+    end
   end
-  
+
   def find_setter(type)
     case type
       when 'text_field'
@@ -52,7 +53,7 @@ class NimbusBrowser < Watir::Browser
       when 'select_list'
         'select'
     end
-  end
+  end  
   
   def create_method( name, &block )
        self.class.send( :define_method, name, &block )

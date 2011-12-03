@@ -1,12 +1,14 @@
-initial_nimbus_ip: 172.16.241.133
+nimbus_ip: 172.16.241.133
 
 nimbus_login:
-  username: admin, text_field
-  password: admin, text_field
+  text_field:
+    username: admin
+    password: admin
 
 wizard_network:
-  address: 172.16.241.134, text_field
-  netmask: 255.255.255.0, text_field
-  gateway: 172.16.241.1, text_field
-  dns1: 172.16.241.1, text_field
-  dns2: 8.8.8.8, text_field
+  text_field:
+    address: 172.16.241.133
+    netmask: 255.255.255.0
+    gateway: 172.16.241.1
+    dns1: 172.16.241.1
+    dns2: 8.8.8.8
