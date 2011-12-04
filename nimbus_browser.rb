@@ -27,7 +27,7 @@ class NimbusBrowser < Watir::Browser
   # Use this before the wizard
   # Since Network Wizard didn't change IP yet
   def goto_start
-    self.goto("", self.virgin_url)
+    self.goto("", self.start_url)
   end
 
   def base_url
