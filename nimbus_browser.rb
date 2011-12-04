@@ -50,14 +50,14 @@ class NimbusBrowser < Watir::Browser
 
   def auto_fill(data_set_name)
     data_dict = self.config[data_set_name.to_s]
-    for type,data in data_dict: 
+    for type,data in data_dict 
       self.fill(type, data)
     end
   end
 
   def fill(type, data)
     setter = find_setter(type)
-    for name,value in data:
+    for name,value in data
       field = self.get_field type, name
       begin
         field.send "#{setter}", value
