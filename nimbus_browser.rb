@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "watir-webdriver"
 require "yaml"
+require "time"
 
 class NimbusBrowser < Watir::Browser
   attr_accessor :config
@@ -10,41 +11,25 @@ class NimbusBrowser < Watir::Browser
     super(browser, *args)
   end
 
-  def goto(uri, base_url=self.base_url)
-    if uri =~ URI.regexp
+  def goto(uri, ip_key=:after_wizard_ip)
+    if uri =~ URI.regexp # something like http://fuck.yeah
       super(uri)
     else
-      super(base_url+uri)
+      super(self.base_url(ip_key)+uri)
     end
   end
 
-  # Network Wizard causes IP to change
-  # Use this after the wizard
-  def goto_base
-    self.goto ""
+  def goto_base(ip_key=:after_wizard_ip)
+    self.goto base_url(ip_key)
   end
 
-  # Use this before the wizard
-  # Since Network Wizard didn't change IP yet
-  def goto_start
-    self.goto("", self.start_url)
+  def base_url(ip_key=:after_wizard_ip)
+    "http://#{self.config[ip_key.to_s]}/"
   end
-
-  def base_url
-    "http://#{self.config['nimbus_ip']}/"
-  end
-  
-  def start_url
-    "http://#{self.config['initial_ip']}/"
-  end
-  
-  def parse_config
-      self.config = open('config.yml') {|f| YAML.load(f)}
-  end
-
-  def nimbus_login
+    
+  def nimbus_login(credentials=:login_credentials)
     self.goto "session/login"
-    self.auto_fill :nimbus_login
+    self.auto_fill credentials
     self.button(:text => 'Acessar').click
   end
 
@@ -53,6 +38,25 @@ class NimbusBrowser < Watir::Browser
     for type,data in data_dict 
       self.fill(type, data)
     end
+  end
+
+  def get_current_time
+    self.span(:id => "actual_time").text
+  end
+
+  def get_current_hour
+    self.get_current_time.split(":")[0]
+  end
+
+  # Internals
+  protected
+
+  def parse_config
+      self.config = open('config.yml') {|f| YAML.load(f)}
+  end
+
+  def get_field(type, name)
+      self.send "#{type}", :name => "#{name}"
   end
 
   def fill(type, data)
@@ -67,10 +71,6 @@ class NimbusBrowser < Watir::Browser
     end
   end
 
-  def get_field(type, name)
-      self.send "#{type}", :name => "#{name}"
-  end
-
   def find_setter(type)
     case type
       when 'text_field'
@@ -78,9 +78,8 @@ class NimbusBrowser < Watir::Browser
       when 'select_list'
         'select'
     end
-  end  
+  end
 end
 
 class UnknownField < Exception
 end
-

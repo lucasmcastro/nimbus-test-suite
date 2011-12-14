@@ -1,10 +1,16 @@
-initial_ip: 192.168.17.129
-nimbus_ip: 192.168.17.133
+before_wizard_ip: 192.168.17.129
+after_wizard_ip: 192.168.17.133
 
-nimbus_login:
-  text_field:
-    username: admin
-    password: admin
+email_notif:
+  checkbox:
+    active: true
+    tls_support: true
+  tex_field:
+    send_to: lucasmcastro@gmail.com
+    email_host: smtp.gmail.com
+    email_port:  25
+    email_user: nimbus.backup.test@gmail.com
+    email_password: LseXtvIByjYT8UHRECjMSw0BM
 
 wizard_network:
   text_field:
@@ -13,6 +19,16 @@ wizard_network:
     gateway: 192.168.17.1
     dns1: 192.168.17.1
     dns2: 8.8.8.8
+
+login_credentials:
+  text_field:
+    username: admin
+    password: admin
+
+wrong_login_credentials:
+  text_field:
+    username: silly
+    password: wrong
 
 wizard_timezone:
   text_field:
@@ -30,3 +46,13 @@ edit_client1:
   text_field:
     name: Client 1
     description: This machine was added by watir automated test.
+
+edit_timezone:
+  select_list:
+    country: Argentina
+    area: America/Argentina/Buenos_Aires
+
+undo_edit_timezone:
+  select_list:
+    country: Brazil
+    area: America/Recife

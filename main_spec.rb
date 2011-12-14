@@ -2,7 +2,6 @@
 require "rubygems"
 require "bundler/setup"
 require "rspec"
-require "open-uri"
 require_relative "nimbus_browser"
 
 
@@ -15,7 +14,7 @@ end
 describe "virgin nimbus" do
   let(:browser)       { @browser ||= NimbusBrowser.new }
 
-  before { browser.goto_start }
+  before { browser.goto_base :before_wizard_ip }
   after { browser.close }
 
   it "should finish whole wizard" do
@@ -25,10 +24,10 @@ describe "virgin nimbus" do
     browser.h2.text.should == "2 DE 5 - CONFIGURAÇÃO DE REDE"
     browser.auto_fill :wizard_network
     browser.button(:text => "Próximo").click
-    browser.h2(:text => "3 de 5 - Configuração do Offsite").wait_until_present
-    browser.button(:text => "Próximo").click
-    browser.h2.text.should == "4 DE 5 - CONFIGURAÇÃO DE HORA"
+    browser.h2(:text => "4 de 5 - Configuração de Hora").wait_until_present
     browser.auto_fill :wizard_timezone
+    browser.button(:text => "Próximo").click
+    browser.h2.text.should == "3 DE 5 - CONFIGURAÇÃO DO OFFSITE"
     browser.button(:text => "Próximo").click
     browser.h2.text.should == "5 DE 5 - SENHA DO USUÁRIO ADMIN"
     browser.auto_fill :wizard_password
@@ -40,19 +39,91 @@ end
 describe "configured nimbus" do
   let(:browser)       { @browser ||= NimbusBrowser.new }
 
+  before { browser.goto_base }
+  after { browser.close }
+
+  it "should be able to login" do
+    browser.nimbus_login    
+    browser.h2.text.should == "BACKUPS" # dashboard
+  end
+
+  it "shold be able to logout" do
+    browser.nimbus_login
+    browser.link(:text => 'Sair').click
+    browser.h2.text.should == "LOGIN • NIMBUS"
+  end
+
+  it "should display error at login failure" do
+    browser.nimbus_login :wrong_login_credentials
+    browser.h2.text.should == "LOGIN • NIMBUS"
+    # TODO: check error message according to I18n 
+  end
+end
+
+
+describe "backup featured nimbus" do
+  let(:browser)       { @browser ||= NimbusBrowser.new }
+
   before { browser.nimbus_login }
   after { browser.close }
 
-  it "should add a client" do
-    browser.h2.text.should == "BACKUPS" # dashboard
-    nimbus_ip = browser.config['nimbus_ip']
+  it "should be able to add a client" do
+    nimbus_ip = browser.config['after_wizard_ip']
     system("nimbusnotifier admin admin #{nimbus_ip}")
-    browser.link(:text => 'Computadores').click
-    browser.link(:text => 'Ativar novo computador').click
+    browser.refresh
+    browser.link(:text => 'Existe um novo computador aguardando para ser ativado').click
     browser.link(:text => 'Editar').click
     browser.auto_fill :edit_client1
     browser.button(:text => 'Atualizar').click
     browser.link(:text => 'Ativar').click #TODO: ask team to change to protect this action with POST
     browser.div(:id => 'computers').text.include?('Client 1').should == true
+  end
+
+  it "should be able to add a backup to Client 1" do
+    browser.link(:text => 'Computadores').click
+    browser.link(:text => 'Listar computador').click #TODO: ask dev team to change to 'computadores'
+    browser.link(:text => 'Client 1').click
+    browser.link(:text => 'Criar Backup').click
+    # Schedule
+    browser.link(:text => 'Criar um agendamento').click
+    browser.span(:text => 'Dom').wait_until_present
+    browser.span(:text => 'Dom').click
+    browser.link(:text => 'Agendamento Semanal').click
+    #browser.link(:text => 'Criar Agendamento').wait_until_present
+    browser.link(:text => 'Criar Agendamento').click
+    browser.link(:text => 'Criar Agendamento').wait_while_present
+    # FileSet
+    browser.link(:text => 'Criar um conjunto de arquivos').wait_until_present
+    browser.link(:text => 'Criar um conjunto de arquivos').click
+    browser.span(:text => '/').wait_until_present    
+    browser.span(:text => '/').click
+    browser.span(:text => 'home/').wait_until_present
+    browser.span(:text => 'home/').click
+    browser.span(:text => 'aluno/').wait_until_present
+    browser.span(:text => 'aluno/').click
+    browser.checkbox(:value => '/home/aluno/Django/').wait_until_present
+    browser.checkbox(:value => '/home/aluno/Django/').click
+    browser.button(:text => 'Salvar').click
+    browser.button(:text => 'Salvar').wait_while_present
+    browser.button(:text => 'Adicionar Backup').click
+  end
+end
+
+describe "management featured nimbus" do
+  let(:browser)       { @browser ||= NimbusBrowser.new }
+
+  before { browser.nimbus_login }
+  after { browser.close }
+
+  it "should be able to change timezone" do
+    browser.link(:text => 'Configurações').click
+    browser.link(:text => 'Configuração de Hora').click
+    base_hour = browser.get_current_hour
+    browser.auto_fill :edit_timezone
+    browser.button(:text => 'Atualizar').click
+    base_hour.to_i.should == browser.get_current_hour.to_i+1 # Shift for Argentina Timezone
+    browser.auto_fill :undo_edit_timezone
+    browser.button(:text => 'Atualizar').click
+    base_hour.should == browser.get_current_hour
   end
 end
