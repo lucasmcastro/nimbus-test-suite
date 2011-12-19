@@ -77,6 +77,10 @@ class NimbusBrowser < Watir::Browser
         'set'
       when 'select_list'
         'select'
+      when 'checkbox'
+        'set'
+      else
+        'else_setter' #TODO throw Exception
     end
   end
 end

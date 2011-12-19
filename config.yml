@@ -5,7 +5,7 @@ email_notif:
   checkbox:
     active: true
     tls_support: true
-  tex_field:
+  text_field:
     send_to: lucasmcastro@gmail.com
     email_host: smtp.gmail.com
     email_port:  25
@@ -16,8 +16,8 @@ wizard_network:
   text_field:
     address: 192.168.17.133
     netmask: 255.255.255.0
-    gateway: 192.168.17.1
-    dns1: 192.168.17.1
+    gateway: 192.168.17.2
+    dns1: 192.168.17.2
     dns2: 8.8.8.8
 
 login_credentials:
@@ -47,6 +47,11 @@ edit_client1:
     name: Client 1
     description: This machine was added by watir automated test.
 
+backup_with_profiles:
+  select_list:
+    procedure-schedule: Sched Profile
+    procedure-fileset: Fset Profile
+
 edit_timezone:
   select_list:
     country: Argentina
@@ -56,3 +61,4 @@ undo_edit_timezone:
   select_list:
     country: Brazil
     area: America/Recife
+

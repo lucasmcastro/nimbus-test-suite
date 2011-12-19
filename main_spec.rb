@@ -4,7 +4,6 @@ require "bundler/setup"
 require "rspec"
 require_relative "nimbus_browser"
 
-
 unless Process.uid == 0
   puts 'Must be run as root'
   exit -1
@@ -105,7 +104,53 @@ describe "backup featured nimbus" do
     browser.checkbox(:value => '/home/aluno/Django/').click
     browser.button(:text => 'Salvar').click
     browser.button(:text => 'Salvar').wait_while_present
+    browser.text_field(:name => 'procedure-name').set 'Watir BPK #1'
     browser.button(:text => 'Adicionar Backup').click
+    browser.h3(:text => 'Watir BPK #1').exists?.should == true
+  end
+
+  it "should be able to add a fileset profile" do
+    browser.link(:text => 'Backup').click
+    browser.link(:text => 'Listar perfis de configuração').click
+    browser.select(:id => 'select_fileset_new').select 'Client 1'
+    browser.link(:text => 'Adicionar').click
+    browser.span(:text => '/').wait_until_present    
+    browser.span(:text => '/').click
+    browser.span(:text => 'home/').wait_until_present
+    browser.span(:text => 'home/').click
+    browser.span(:text => 'aluno/').wait_until_present
+    browser.span(:text => 'aluno/').click
+    browser.checkbox(:value => '/home/aluno/Django/').wait_until_present
+    browser.checkbox(:value => '/home/aluno/Django/').click
+    browser.text_field(:name => 'fileset-name').set 'Fset Profile'
+    browser.button(:text => 'Salvar').click
+    browser.button(:text => 'Salvar').wait_while_present
+    browser.div(:class => 'fileset').text.include?('Fset Profile').should == true
+
+  end
+
+  it "should be able to add a fileset profile" do
+    browser.link(:text => 'Backup').click
+    browser.link(:text => 'Listar perfis de configuração').click
+    browser.link(:class => 'css3button positive edit-schedule').click # TODO: Ask dev team to change this
+    browser.span(:text => 'Dom').wait_until_present
+    browser.span(:text => 'Dom').click
+    browser.link(:text => 'Agendamento Semanal').click
+    browser.text_field(:id => 'schedule_name').set 'Sched Profile'
+    browser.link(:text => 'Criar Agendamento').click
+    browser.link(:text => 'Criar Agendamento').wait_while_present    
+    browser.div(:class => 'schedule').text.include?('Sched Profile').should == true
+  end
+
+  it "should be able to add a backup to Client 1 with profiles" do
+    browser.link(:text => 'Computadores').click
+    browser.link(:text => 'Listar computador').click #TODO: ask dev team to change to 'computadores'
+    browser.link(:text => 'Client 1').click
+    browser.link(:text => 'Criar Backup').click
+    browser.auto_fill :backup_with_profiles
+    browser.text_field(:name => 'procedure-name').set 'Watir BPK #2'
+    browser.button(:text => 'Adicionar Backup').click
+    browser.h3(:text => 'Watir BPK #2').exists?.should == true  
   end
 end
 
@@ -125,5 +170,16 @@ describe "management featured nimbus" do
     browser.auto_fill :undo_edit_timezone
     browser.button(:text => 'Atualizar').click
     base_hour.should == browser.get_current_hour
+  end
+
+  it "should be able to configure email notif1" do
+    browser.link(:text => 'Configurações').click
+    browser.link(:text => 'Notificações por email').click
+    debugger
+    browser.auto_fill :email_notif
+    browser.button(:text => 'Atualizar').click
+    browser.div(:class => 'message success').exists?.should == true
+    browser.button.click
+    browser.div(:class => 'message success').exists?.should == true     
   end
 end
