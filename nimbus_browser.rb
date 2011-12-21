@@ -26,9 +26,15 @@ class NimbusBrowser < Watir::Browser
   def base_url(ip_key=:after_wizard_ip)
     "http://#{self.config[ip_key.to_s]}/"
   end
+
+  def menu(main_menu, option)
+    self.link(:text => main_menu).click
+    self.link(:text => option).wait_until_present
+    self.link(:text => option).click
+  end
     
   def nimbus_login(credentials=:login_credentials)
-    self.goto "session/login"
+    self.goto_base
     self.auto_fill credentials
     self.button(:text => 'Acessar').click
   end
@@ -66,7 +72,9 @@ class NimbusBrowser < Watir::Browser
       begin
         field.send "#{setter}", value
       rescue Watir::Exception::UnknownObjectException
-        raise  UnknownField, "Could not find #{type} with name '#{name}'"
+        raise  UnknownField, "Could not find field '#{type}' with name '#{name}'"
+      rescue NoMethodError
+        raise UnknownSetter, "The field '#{type}' doesn't seem to have '#{setter}' setter"
       end
     end
   end
@@ -80,10 +88,16 @@ class NimbusBrowser < Watir::Browser
       when 'checkbox'
         'set'
       else
-        'else_setter' #TODO throw Exception
+        raise  UnknownFieldType, "Could not find propper setter for '#{type}' field type"
     end
   end
 end
 
 class UnknownField < Exception
+end
+
+class UnknownFieldType < Exception
+end
+
+class UnknownSetter < Exception
 end

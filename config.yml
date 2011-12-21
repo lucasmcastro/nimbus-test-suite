@@ -27,8 +27,13 @@ login_credentials:
 
 wrong_login_credentials:
   text_field:
-    username: silly
+    username: admin
     password: wrong
+
+changed_credentials:
+  text_field:
+    username: admin
+    password: changed
 
 wizard_timezone:
   text_field:
@@ -61,4 +66,16 @@ undo_edit_timezone:
   select_list:
     country: Brazil
     area: America/Recife
+
+edit_password:
+  text_field:
+    old_password: admin
+    new_password1: changed
+    new_password2: changed
+
+undo_edit_password:
+  text_field:
+    old_password: changed
+    new_password1: admin
+    new_password2: admin
 
