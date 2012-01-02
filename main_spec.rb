@@ -158,7 +158,7 @@ describe "Nimbus with backup features" do
     browser.h3(:text => 'Watir BKP #2').exists?.should == true  
   end
 
-  it "should be able to force a backup execution" do
+  it "should be able to do a successfull backup" do
     browser.menu 'Backup', 'Listar procedimentos'
     browser.button(:text => 'Executar Agora').click
     until(browser.span(:class => 'status_running').exists?) do
@@ -328,6 +328,18 @@ describe "Nimbus with edit objects features" do
     browser.button(:text => 'Salvar').click
     browser.button(:text => 'Salvar').wait_while_present
     browser.div(:class => 'fileset').text.include?('/tmp/').should == false
+  end
+
+  it "should be able to still do a successfull backup after backup changes" do
+    browser.menu 'Backup', 'Listar procedimentos'
+    browser.button(:text => 'Executar Agora').click
+    until(browser.span(:class => 'status_running').exists?) do
+      browser.refresh
+    end
+    while(browser.span(:class => 'status_running').exists?) do
+      browser.refresh
+    end
+    browser.span(:class => 'status_ok').exists?.should == true  
   end
 end
 
