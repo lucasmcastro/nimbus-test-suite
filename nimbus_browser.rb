@@ -28,6 +28,7 @@ class NimbusBrowser < Watir::Browser
   end
 
   def menu(main_menu, option)
+    self.link(:text => main_menu).wait_until_present
     self.link(:text => main_menu).click
     self.link(:text => option).wait_until_present
     self.link(:text => option).click
