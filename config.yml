@@ -8,7 +8,7 @@ email_notif:
   text_field:
     send_to: lucasmcastro@gmail.com
     email_host: smtp.gmail.com
-    email_port:  25
+    email_port:  587
     email_user: nimbus.backup.test@gmail.com
     email_password: LseXtvIByjYT8UHRECjMSw0BM
 
@@ -19,6 +19,11 @@ wizard_network:
     gateway: 192.168.17.2
     dns1: 192.168.17.2
     dns2: 8.8.8.8
+
+wizard_offsite:
+  text_field:
+    username: testenovonimbus
+    password: testenovonimbus
 
 login_credentials:
   text_field:
@@ -78,4 +83,3 @@ undo_edit_password:
     old_password: changed
     new_password1: admin
     new_password2: admin
-

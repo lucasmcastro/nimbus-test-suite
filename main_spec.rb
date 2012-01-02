@@ -10,7 +10,6 @@ unless Process.uid == 0
   exit -1
 end
 
-
 describe "Nimbus with wizard features" do
   let(:browser)       { @browser ||= NimbusBrowser.new }
 
@@ -29,6 +28,9 @@ describe "Nimbus with wizard features" do
     browser.auto_fill :wizard_timezone
     browser.button(:text => "Próximo").click
     browser.h2.text.should == "3 DE 5 - CONFIGURAÇÃO DO OFFSITE"
+    browser.checkbox(:id => 'id_active').click
+    browser.text_field(:name => 'username').wait_until_present
+    browser.auto_fill :wizard_offsite
     browser.button(:text => "Próximo").click
     browser.h2.text.should == "5 DE 5 - SENHA DO USUÁRIO ADMIN"
     browser.auto_fill :wizard_password
@@ -103,8 +105,8 @@ describe "Nimbus with backup features" do
     browser.span(:text => 'home/').click
     browser.span(:text => 'aluno/').wait_until_present
     browser.span(:text => 'aluno/').click
-    browser.checkbox(:value => '/home/aluno/Django/').wait_until_present
-    browser.checkbox(:value => '/home/aluno/Django/').click
+    browser.checkbox(:value => '/home/aluno/Downloads/').wait_until_present
+    browser.checkbox(:value => '/home/aluno/Downloads/').click
     browser.button(:text => 'Salvar').click
     browser.button(:text => 'Salvar').wait_while_present
     browser.text_field(:name => 'procedure-name').set 'Watir BKP #1'
@@ -116,14 +118,14 @@ describe "Nimbus with backup features" do
     browser.menu 'Backup', 'Listar perfis de configuração'
     browser.select(:id => 'select_fileset_new').select 'Client 1'
     browser.link(:text => 'Adicionar').click
-    browser.span(:text => '/').wait_until_present    
+    browser.span(:text => '/').wait_until_present
     browser.span(:text => '/').click
     browser.span(:text => 'home/').wait_until_present
     browser.span(:text => 'home/').click
     browser.span(:text => 'aluno/').wait_until_present
     browser.span(:text => 'aluno/').click
-    browser.checkbox(:value => '/home/aluno/Django/').wait_until_present
-    browser.checkbox(:value => '/home/aluno/Django/').click
+    browser.checkbox(:value => '/home/aluno/Downloads/').wait_until_present
+    browser.checkbox(:value => '/home/aluno/Downloads/').click
     browser.text_field(:name => 'fileset-name').set 'Fset Profile'
     browser.button(:text => 'Salvar').click
     browser.button(:text => 'Salvar').wait_while_present
@@ -154,6 +156,18 @@ describe "Nimbus with backup features" do
     browser.text_field(:name => 'procedure-name').set 'Watir BKP #2'
     browser.button(:text => 'Adicionar Backup').click
     browser.h3(:text => 'Watir BKP #2').exists?.should == true  
+  end
+
+  it "should be able to force a backup execution" do
+    browser.menu 'Backup', 'Listar procedimentos'
+    browser.button(:text => 'Executar Agora').click
+    until(browser.span(:class => 'status_running').exists?) do
+      browser.refresh
+    end
+    while(browser.span(:class => 'status_running').exists?) do
+      browser.refresh
+    end
+    browser.span(:class => 'status_ok').exists?.should == true  
   end
 end
 
@@ -221,6 +235,12 @@ describe "Nimbus with management features" do
     browser.button.click
     browser.div(:class => 'message error').exists?.should == true     
   end
+
+  it "should be able to see about nimbus" do
+    browser.menu 'Ajuda', 'Sobre o Nimbus'
+    browser.link(:href => '/LICENSE/').wait_until_present
+    browser.link(:href => '/LICENSE/').exists?.should == true
+  end
 end
 
 describe "Nimbus with edit objects features" do
@@ -283,15 +303,33 @@ describe "Nimbus with edit objects features" do
     browser.button(:text => 'Salvar').wait_while_present
     browser.div(:class => 'schedule').text.include?('Sabado').should == false
   end
-end
 
-=begin
-  it "should be able to edit fileset profile" do
-    browser.link(:text => 'Backup').click
-    browser.link(:text => 'Listar perfis de configuração').click
-    browser.div(:class => 'fileset').link(:text => 'Editar').click    
+  it "should be able to edit fileset profile (adding)" do
+    browser.menu 'Backup', 'Listar perfis de configuração'
+    fset_div = browser.div(:class => 'fileset')
+    fset_div.select(:class => 'computer-fileset').select 'Client 1'
+    fset_div.link(:text => 'Editar').click
+    browser.span(:text => '/').wait_until_present
+    browser.span(:text => '/').click
+    browser.checkbox(:value => '/tmp/').wait_until_present
+    browser.checkbox(:value => '/tmp/').click
+    browser.button(:text => 'Salvar').click
+    browser.button(:text => 'Salvar').wait_while_present
+    browser.div(:class => 'fileset').text.include?('/tmp/').should == true
   end
-=end
+
+  it "should be able to edit fileset profile (removing)" do
+    browser.menu 'Backup', 'Listar perfis de configuração'
+    fset_div = browser.div(:class => 'fileset')
+    fset_div.select(:class => 'computer-fileset').select 'Client 1'
+    fset_div.link(:text => 'Editar').click
+    browser.span(:text => '/').wait_until_present
+    browser.checkbox(:id => 'id_files-1-DELETE').click
+    browser.button(:text => 'Salvar').click
+    browser.button(:text => 'Salvar').wait_while_present
+    browser.div(:class => 'fileset').text.include?('/tmp/').should == false
+  end
+end
 
 describe "Nimbus with remove objects features" do
   let(:browser)       { @browser ||= NimbusBrowser.new }
@@ -335,3 +373,7 @@ describe "Nimbus with remove objects features" do
     browser.h3(:text => 'Client 1').exists?.should == false
   end
 end
+
+
+
+
